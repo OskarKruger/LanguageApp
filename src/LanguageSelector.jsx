@@ -104,13 +104,11 @@ const LanguageSelector = () => {
 
   // Delete a card item (dropdown) by its ID
   const handleDeleteDropdown = (dropdownId) => {
-    if (dropdowns.length > 1) {
-      // Ensure there's at least one left, if not, disable button
       const updatedDropdowns = dropdowns.filter(
         (dropdown) => dropdown.id !== dropdownId
       );
       setDropdowns(updatedDropdowns);
-    }
+    
   };
 
   // Move a card item (dropdown) up in the list
