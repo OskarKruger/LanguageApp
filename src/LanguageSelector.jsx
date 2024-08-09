@@ -9,12 +9,15 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardActions from "@mui/material/CardActions";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import TextField from "@mui/material/TextField";
 
 const LanguageSelector = () => {
   // State to manage available languages and prompts
   const [languages, setLanguages] = useState({});
-  const [selectedLanguage, setSelectedLanguage] = useState("en"); // Default language, only for the initial item and not subsequent items
-  const [selectedLanguageName, setSelectedLanguageName] = useState(""); //Leave empty due to new cards not have preselected language
   const [prompts, setPrompts] = useState({});
 
   // State to manage multiple language card items (dropdowns)
@@ -28,6 +31,10 @@ const LanguageSelector = () => {
   ]);
   const [dropdownCounter, setDropdownCounter] = useState(2); // Counter for unique IDs to handle unsequenced card additions
 
+  // Modal state
+  const [openModal, setOpenModal] = useState(false);
+  const [newCardLanguage, setNewCardLanguage] = useState("");
+
   // Fetch languages and translations whenever the selected language changes
   useEffect(() => {
     const fetchData = async () => {
@@ -35,10 +42,10 @@ const LanguageSelector = () => {
         // Fetch languages and translations overall
         const [languagesResponse, translationsResponse] = await Promise.all([
           fetch(
-            `https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/allLanguages/${selectedLanguage}`
+            `https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/allLanguages/en`
           ),
           fetch(
-            `https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/translations/${selectedLanguage}`
+            `https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/translations/en`
           ),
         ]);
 
@@ -48,13 +55,6 @@ const LanguageSelector = () => {
 
         setLanguages(languagesData);
 
-        // Determine the name of the selected language from the isoCodes from backend
-        const selectedLanguageName =
-          Object.values(languagesData).find(
-            (lang) => lang.languageIsoCodesWithLocales[selectedLanguage]
-          )?.languageIsoCodesWithLocales[selectedLanguage] || "English";
-        setSelectedLanguageName(selectedLanguageName);
-
         // Set translation prompts, some languages don't have this, default is "SortLanguagesPrompt"
         setPrompts(translationsData);
       } catch (error) {
@@ -63,15 +63,7 @@ const LanguageSelector = () => {
     };
 
     fetchData();
-  }, [selectedLanguage]);
-
-  // Update the selected language and promt, based on the top-most card item (dropdown)
-  useEffect(() => {
-    if (dropdowns.length > 0 && dropdowns[0].selectedLanguage) {
-      const topCardLanguage = dropdowns[0].selectedLanguage || "en"; // Default to 'en' if nothing else
-      setSelectedLanguage(topCardLanguage);
-    }
-  }, [dropdowns]);
+  }, []);
 
   // Handle change in language selection for a card items (dropdowns)
   const handleChange = (event, dropdownId) => {
@@ -89,6 +81,11 @@ const LanguageSelector = () => {
 
   // Add a new card item (dropdown) to the list
   const handleAddDropdown = () => {
+    setOpenModal(true);
+  };
+
+  // Confirm adding a new card with the selected language from the modal
+  const handleConfirmAdd = () => {
     const newDropdownId = String(dropdownCounter);
     const newDroppableId = `dropdown-${newDropdownId}`;
     setDropdowns([
@@ -97,10 +94,12 @@ const LanguageSelector = () => {
         id: newDropdownId,
         droppableId: newDroppableId,
         draggableId: newDropdownId,
-        selectedLanguage: "", //Make it empty to force a language selection
+        selectedLanguage: newCardLanguage,
       },
     ]);
     setDropdownCounter(dropdownCounter + 1); // Increment counter
+    setNewCardLanguage(""); // Reset language selection
+    setOpenModal(false); // Close modal
   };
 
   // Delete a card item (dropdown) by its ID
@@ -111,7 +110,6 @@ const LanguageSelector = () => {
         (dropdown) => dropdown.id !== dropdownId
       );
       setDropdowns(updatedDropdowns);
-      //Keep dropdownCounter to avoid reusing IDs
     }
   };
 
@@ -136,7 +134,7 @@ const LanguageSelector = () => {
   };
 
   // Extract unique selected languages to manage card item (dropdown) state
-  const selectedLanguages = new Set( //Use "Set" to avoid duplicates
+  const selectedLanguages = new Set(
     dropdowns.map((dropdown) => dropdown.selectedLanguage)
   );
 
@@ -156,21 +154,18 @@ const LanguageSelector = () => {
             >
               {/* Map through the available languages to create dropdown options */}
               {Object.entries(languages).map(([isoCode, language]) =>
-                Object.entries(language.languageIsoCodesWithLocales).map(
-                  ([variantCode, variantName]) => (
-                    <MenuItem
-                      key={variantCode}
-                      value={variantCode}
-                      // Disable language if already selected in another card
-                      disabled={
-                        selectedLanguages.has(variantCode) &&
-                        dropdown.selectedLanguage !== variantCode
-                      }
-                    >
-                      {variantName} ({variantCode})
-                    </MenuItem>
-                  )
-                )
+                dropdown.selectedLanguage === isoCode
+                  ? Object.entries(language.languageIsoCodesWithLocales).map(
+                      ([variantCode, variantName]) => (
+                        <MenuItem
+                          key={variantCode}
+                          value={variantCode}
+                        >
+                          {variantName} ({variantCode})
+                        </MenuItem>
+                      )
+                    )
+                  : null
               )}
             </Select>
           </CardContent>
@@ -223,6 +218,35 @@ const LanguageSelector = () => {
           {prompts.ChoosePreferredLanguagesPrompt}
         </Button>
       </div>
+
+      {/* Modal for selecting new language */}
+      <Dialog open={openModal} onClose={() => setOpenModal(false)}>
+        <DialogTitle>Select Language for New Card</DialogTitle>
+        <DialogContent>
+          <TextField
+            select
+            value={newCardLanguage}
+            onChange={(e) => setNewCardLanguage(e.target.value)}
+            fullWidth
+            SelectProps={{
+              native: true,
+            }}
+          >
+            <option value="" disabled>Select a language</option>
+            {Object.entries(languages).map(([isoCode, language]) => (
+              <option key={isoCode} value={isoCode}>
+                {language.languageIsoCodesWithLocales[isoCode]} ({isoCode})
+              </option>
+            ))}
+          </TextField>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+          <Button onClick={handleConfirmAdd} disabled={!newCardLanguage}>
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
