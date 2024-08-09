@@ -1,40 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Prevent scrolling */
-  font-family: 'Arial', sans-serif;
+  overflow: hidden;
+  font-family: 'Poppins', sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #a1a1a1; /* Light grey background */
+  min-height: 100vh;
+  background: linear-gradient(135deg, #a5b4f5 0%, rgba(58, 69, 180) 100%);
+  color: #333;
 }
 
 #root {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%; /* Full viewport height */
   width: 100%;
+  padding: 20px;
 }
 
 .container {
-  background-color: #fff; /* White background for the card */
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  max-width: 450px;
   width: 100%;
   text-align: center;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
 }
+
+
 
 .App-header {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: #333; /* Darker text color */
+  font-size: calc(12px + 2vmin);
+  color: #333;
+  margin-bottom: 20px;
 }
 
 select {
@@ -42,47 +50,77 @@ select {
   margin: 10px 0;
   color: #555;
   background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
   font-size: 1rem;
   width: 100%;
+  transition: all 0.3s ease;
 }
 
 select:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: #764ba2;
+  box-shadow: 0 0 0 2px rgba(118, 75, 162, 0.2);
 }
 
 p {
-  font-size: 1.2rem;
-  margin: 10px 0;
+  font-size: 1.1rem;
+  margin: 15px 0;
+  line-height: 1.5;
 }
 
 .card {
-  margin-bottom: 8px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .card-actions {
   display: flex;
   justify-content: space-between;
+  margin-top: 10px;
 }
 
 button {
   margin-top: 20px;
-  padding: 10px 20px;
-  background-color: #007bff;
+  padding: 12px 24px;
+  background-color: rgba(58, 69, 180);
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 5px 15px rgba(58, 69, 180);
+  transform: scale(1);
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #5a3a7e;
+  transform: scale(1.05);
 }
 
 button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 20px;
+  }
+
+  select, button {
+    font-size: 0.9rem;
+  }
 }
