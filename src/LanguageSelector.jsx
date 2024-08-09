@@ -15,13 +15,14 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 
+// Base URL for API calls
+const API_BASE_URL = "https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1";
+
 const LanguageSelector = () => {
-  // State to manage available languages and prompts
+  // State to manage available languages, prompts, and dropdown cards
   const [languages, setLanguages] = useState({});
   const [prompts, setPrompts] = useState({});
-
-  // State to manage multiple language card items (dropdowns)
-  const [dropdowns, setDropdowns] = useState([
+  const [dropdownCards, setDropdownCards] = useState([
     {
       id: "1",
       droppableId: "dropdown-1",
@@ -29,189 +30,172 @@ const LanguageSelector = () => {
       selectedLanguage: "en",
     },
   ]);
-  const [dropdownCounter, setDropdownCounter] = useState(2); // Counter for unique IDs to handle unsequenced card additions
+  const [dropdownCounter, setDropdownCounter] = useState(2);
 
   // Modal state
   const [openModal, setOpenModal] = useState(false);
   const [newCardLanguage, setNewCardLanguage] = useState("");
 
-  // Fetch languages and translations whenever the selected language changes
+  // Fetch languages and translations
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch languages and translations overall
         const [languagesResponse, translationsResponse] = await Promise.all([
-          fetch(`https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/allLanguages/en`),
-          fetch(`https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/translations/en`)
+          fetch(`${API_BASE_URL}/allLanguages/en`),
+          fetch(`${API_BASE_URL}/translations/en`),
         ]);
-  
-        // Set states
+
         const languagesData = await languagesResponse.json();
         const translationsData = await translationsResponse.json();
-  
+
         setLanguages(languagesData);
-        
-        // Get the top language and its base language code
-        const topLanguageCode = dropdowns[0].selectedLanguage;
-        const baseLanguageCode = topLanguageCode.split('-')[0]; // Get the base language code (e.g., 'en' from 'en-US')
-  
-        // Fetch the prompt for the base language
-        const topLanguagePromptResponse = await fetch(`https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/translations/${baseLanguageCode}`);
+
+        const topLanguageCode = dropdownCards[0].selectedLanguage;
+        const baseLanguageCode = topLanguageCode.split("-")[0];
+
+        const topLanguagePromptResponse = await fetch(
+          `${API_BASE_URL}/translations/${baseLanguageCode}`
+        );
         const topLanguagePromptData = await topLanguagePromptResponse.json();
-  
-        const updatedPrompts = { 
+
+        setPrompts({
           ...translationsData,
-          SortLanguagesPrompt: topLanguagePromptData.SortLanguagesPrompt || translationsData.SortLanguagesPrompt
-        };
-  
-        setPrompts(updatedPrompts);
-  
+          SortLanguagesPrompt:
+            topLanguagePromptData.SortLanguagesPrompt ||
+            translationsData.SortLanguagesPrompt,
+        });
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-  
+
     fetchData();
-  }, [dropdowns]); // Keep dropdowns as a dependency
+  }, [dropdownCards]);
 
-  // Handle change in language selection for a card items (dropdowns)
+  // Handler for language selection change
   const handleChange = (event, dropdownId) => {
-  const selectedValue = event.target.value;
-  const updatedDropdowns = dropdowns.map((dropdown) => {
-    if (dropdown.id === dropdownId) {
-      return {
-        ...dropdown,
-        selectedLanguage: selectedValue,
-      };
-    }
-    return dropdown;
-  });
-  setDropdowns(updatedDropdowns);
-};
-
-  // Add a new card item (dropdown) to the list
-  const handleAddDropdown = () => {
-    setOpenModal(true);
+    const selectedValue = event.target.value;
+    setDropdownCards((prevCards) =>
+      prevCards.map((card) =>
+        card.id === dropdownId
+          ? { ...card, selectedLanguage: selectedValue }
+          : card
+      )
+    );
   };
 
-  // Confirm adding a new card with the selected language from the modal
+  // Handler to open modal for adding a new dropdown card
+  const handleAddDropdown = () => setOpenModal(true);
+
+  // Handler to confirm adding a new dropdown card
   const handleConfirmAdd = () => {
     const newDropdownId = String(dropdownCounter);
-    const newDroppableId = `dropdown-${newDropdownId}`;
-    setDropdowns([
-      ...dropdowns,
+    setDropdownCards((prevCards) => [
+      ...prevCards,
       {
         id: newDropdownId,
-        droppableId: newDroppableId,
+        droppableId: `dropdown-${newDropdownId}`,
         draggableId: newDropdownId,
         selectedLanguage: newCardLanguage,
       },
     ]);
-    setDropdownCounter(dropdownCounter + 1); // Increment counter
-    setNewCardLanguage(""); // Reset language selection
-    setOpenModal(false); // Close modal
+    setDropdownCounter((prevCounter) => prevCounter + 1);
+    setNewCardLanguage("");
+    setOpenModal(false);
   };
 
-  // Delete a card item (dropdown) by its ID
+  // Handler to delete a dropdown card
   const handleDeleteDropdown = (dropdownId) => {
-      const updatedDropdowns = dropdowns.filter(
-        (dropdown) => dropdown.id !== dropdownId
-      );
-      setDropdowns(updatedDropdowns);
+    setDropdownCards((prevCards) =>
+      prevCards.filter((card) => card.id !== dropdownId)
+    );
   };
 
-  // Move a card item (dropdown) up in the list
-  const handleMoveUp = (index) => {
-    if (index === 0) return; // Already at the top, disable button
-    setDropdowns((prevDropdowns) => {
-      const updatedDropdowns = [...prevDropdowns];
-      const temp = updatedDropdowns[index];
-      updatedDropdowns[index] = updatedDropdowns[index - 1];
-      updatedDropdowns[index - 1] = temp;
-      return updatedDropdowns;
+  // Handler to move a dropdown card up or down in the list
+  const handleMove = (index, direction) => {
+    setDropdownCards((prevCards) => {
+      const newCards = [...prevCards];
+      const newIndex = index + direction;
+      [newCards[index], newCards[newIndex]] = [
+        newCards[newIndex],
+        newCards[index],
+      ];
+      return newCards;
     });
   };
 
-  // Move a card item (dropdown) down in the list
-  const handleMoveDown = (index) => {
-    if (index === dropdowns.length - 1) return; // Already at the bottom, disable button
-    setDropdowns((prevDropdowns) => {
-      const updatedDropdowns = [...prevDropdowns];
-      const temp = updatedDropdowns[index];
-      updatedDropdowns[index] = updatedDropdowns[index + 1];
-      updatedDropdowns[index + 1] = temp;
-      return updatedDropdowns;
-    });
+  // Function to check if a move button should be disabled
+  const isMoveDisabled = (index, direction) => {
+    const newIndex = index + direction;
+    return (
+      newIndex < 0 ||
+      newIndex >= dropdownCards.length ||
+      dropdownCards[index].selectedLanguage === "" ||
+      dropdownCards[newIndex].selectedLanguage === ""
+    );
   };
 
-  // Extract unique selected languages to manage card item (dropdown) state
-  const selectedLanguages = new Set(
-    dropdowns.map((dropdown) => dropdown.selectedLanguage)
-  );
+  // Function to check if delete button should be disabled
+  const isDeleteDisabled = () => {
+    return (
+      dropdownCards.length === 1 ||
+      (dropdownCards.length === 2 &&
+        dropdownCards.some((card) => card.selectedLanguage === ""))
+    );
+  };
+
+  // Function to render language options for a dropdown card
+  const renderLanguageOptions = (selectedLanguage) => {
+    return Object.entries(languages).flatMap(([isoCode, language]) =>
+      selectedLanguage.startsWith(isoCode)
+        ? Object.entries(language.languageIsoCodesWithLocales).map(
+            ([variantCode, variantName]) => (
+              <MenuItem key={variantCode} value={variantCode}>
+                {variantName} ({variantCode})
+              </MenuItem>
+            )
+          )
+        : []
+    );
+  };
 
   return (
     <div className="container">
-      {/* Display prompts with selected language translations*/}
+      {/* Display prompt for sorting languages */}
       <h4>{prompts.SortLanguagesPrompt || "Loading prompt..."}</h4>
 
-      {/* Map all cards to render each Card*/}
-      {dropdowns.map((dropdown, index) => (
-        <Card key={dropdown.droppableId} style={{ marginBottom: "8px" }}>
+      {/* Render all dropdown cards */}
+      {dropdownCards.map((card, index) => (
+        <Card key={card.droppableId} style={{ marginBottom: "8px" }}>
           <CardContent>
-            {/* Dropdown menu for selecting a language */}
+            {/* Dropdown for language selection */}
             <Select
-              value={dropdown.selectedLanguage || ""}
-              onChange={(e) => handleChange(e, dropdown.id)}
+              value={card.selectedLanguage || ""}
+              onChange={(e) => handleChange(e, card.id)}
             >
-              {Object.entries(languages).map(([isoCode, language]) =>
-                dropdown.selectedLanguage.startsWith(isoCode)
-                  ? Object.entries(language.languageIsoCodesWithLocales).map(
-                      ([variantCode, variantName]) => (
-                        <MenuItem key={variantCode} value={variantCode}>
-                          {variantName} ({variantCode})
-                        </MenuItem>
-                      )
-                    )
-                  : null
-              )}
+              {renderLanguageOptions(card.selectedLanguage)}
             </Select>
           </CardContent>
           <CardActions className="card-actions">
-            {/* Button to move the cards up*/}
+            {/* Buttons for moving up, moving down, and deleting */}
             <IconButton
               aria-label="move-up"
-              onClick={() => handleMoveUp(index)}
-              disabled={
-                index === 0 || // Disable if it's already at the top
-                dropdown.selectedLanguage === "" || // Disable if no language is selected
-                dropdowns[index - 1]?.selectedLanguage === "" // Disable if the above dropdown is empty
-              }
+              onClick={() => handleMove(index, -1)}
+              disabled={isMoveDisabled(index, -1)}
             >
               <ArrowUpwardIcon />
             </IconButton>
-            {/* Button to move the cards down*/}
             <IconButton
               aria-label="move-down"
-              onClick={() => handleMoveDown(index)}
-              disabled={
-                index === dropdowns.length - 1 || // Disable if it's already at the bottom
-                dropdown.selectedLanguage === "" || // Disable if no language is selected
-                dropdowns[index + 1]?.selectedLanguage === "" // Disable if the below dropdown is empty
-              }
+              onClick={() => handleMove(index, 1)}
+              disabled={isMoveDisabled(index, 1)}
             >
               <ArrowDownwardIcon />
             </IconButton>
-            {/* Button to delete the cards*/}
             <IconButton
               aria-label="delete"
-              onClick={() => handleDeleteDropdown(dropdown.id)}
-              disabled={
-                dropdowns.length === 1 || // Disable if only one card is left
-                (dropdowns.length === 2 &&
-                  dropdowns.some(
-                    (dropdown) => dropdown.selectedLanguage === ""
-                  )) // Disable if there are two cards left and one is empty
-              }
+              onClick={() => handleDeleteDropdown(card.id)}
+              disabled={isDeleteDisabled()}
             >
               <DeleteIcon />
             </IconButton>
@@ -219,14 +203,14 @@ const LanguageSelector = () => {
         </Card>
       ))}
 
-      {/* Button to add a new dropdown*/}
+      {/* Button to add a new dropdown card */}
       <div style={{ marginTop: "10px" }}>
         <Button variant="contained" color="primary" onClick={handleAddDropdown}>
           {prompts.ChoosePreferredLanguagesPrompt || "Add Dropdown"}
         </Button>
       </div>
 
-      {/* Modal for selecting new language */}
+      {/* Modal for selecting a new language */}
       <Dialog open={openModal} onClose={() => setOpenModal(false)}>
         <DialogTitle>Select Language for New Card</DialogTitle>
         <DialogContent>
@@ -235,9 +219,7 @@ const LanguageSelector = () => {
             value={newCardLanguage}
             onChange={(e) => setNewCardLanguage(e.target.value)}
             fullWidth
-            SelectProps={{
-              native: true,
-            }}
+            SelectProps={{ native: true }}
           >
             <option value="" disabled>
               Select a language
