@@ -51,15 +51,19 @@ const LanguageSelector = () => {
   
         setLanguages(languagesData);
         
-        // Update prompt with current selected language
-        const topLanguage = dropdowns[0].selectedLanguage;
-        const updatedPrompts = { ...translationsData };
-        if (languagesData[topLanguage] && translationsData.SortLanguagesPrompt) {
-          // Fetch the prompt for the top language
-          const topLanguagePromptResponse = await fetch(`https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/translations/${topLanguage}`);
-          const topLanguagePromptData = await topLanguagePromptResponse.json();
-          updatedPrompts.SortLanguagesPrompt = topLanguagePromptData.SortLanguagesPrompt || translationsData.SortLanguagesPrompt;
-        }
+        // Get the top language and its base language code
+        const topLanguageCode = dropdowns[0].selectedLanguage;
+        const baseLanguageCode = topLanguageCode.split('-')[0]; // Get the base language code (e.g., 'en' from 'en-US')
+  
+        // Fetch the prompt for the base language
+        const topLanguagePromptResponse = await fetch(`https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/translations/${baseLanguageCode}`);
+        const topLanguagePromptData = await topLanguagePromptResponse.json();
+  
+        const updatedPrompts = { 
+          ...translationsData,
+          SortLanguagesPrompt: topLanguagePromptData.SortLanguagesPrompt || translationsData.SortLanguagesPrompt
+        };
+  
         setPrompts(updatedPrompts);
   
       } catch (error) {
@@ -68,20 +72,22 @@ const LanguageSelector = () => {
     };
   
     fetchData();
-  }, [dropdowns]); // Add dropdowns as a dependency
+  }, [dropdowns]); // Keep dropdowns as a dependency
+
   // Handle change in language selection for a card items (dropdowns)
   const handleChange = (event, dropdownId) => {
-    const updatedDropdowns = dropdowns.map((dropdown) => {
-      if (dropdown.id === dropdownId) {
-        return {
-          ...dropdown,
-          selectedLanguage: event.target.value,
-        };
-      }
-      return dropdown;
-    });
-    setDropdowns(updatedDropdowns);
-  };
+  const selectedValue = event.target.value;
+  const updatedDropdowns = dropdowns.map((dropdown) => {
+    if (dropdown.id === dropdownId) {
+      return {
+        ...dropdown,
+        selectedLanguage: selectedValue,
+      };
+    }
+    return dropdown;
+  });
+  setDropdowns(updatedDropdowns);
+};
 
   // Add a new card item (dropdown) to the list
   const handleAddDropdown = () => {
