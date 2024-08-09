@@ -152,15 +152,11 @@ const LanguageSelector = () => {
               value={dropdown.selectedLanguage || ""}
               onChange={(e) => handleChange(e, dropdown.id)}
             >
-              {/* Map through the available languages to create dropdown options */}
               {Object.entries(languages).map(([isoCode, language]) =>
-                dropdown.selectedLanguage === isoCode
+                dropdown.selectedLanguage.startsWith(isoCode)
                   ? Object.entries(language.languageIsoCodesWithLocales).map(
                       ([variantCode, variantName]) => (
-                        <MenuItem
-                          key={variantCode}
-                          value={variantCode}
-                        >
+                        <MenuItem key={variantCode} value={variantCode}>
                           {variantName} ({variantCode})
                         </MenuItem>
                       )
@@ -232,7 +228,9 @@ const LanguageSelector = () => {
               native: true,
             }}
           >
-            <option value="" disabled>Select a language</option>
+            <option value="" disabled>
+              Select a language
+            </option>
             {Object.entries(languages).map(([isoCode, language]) => (
               <option key={isoCode} value={isoCode}>
                 {language.languageIsoCodesWithLocales[isoCode]} ({isoCode})
