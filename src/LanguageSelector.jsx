@@ -41,30 +41,34 @@ const LanguageSelector = () => {
       try {
         // Fetch languages and translations overall
         const [languagesResponse, translationsResponse] = await Promise.all([
-          fetch(
-            `https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/allLanguages/en`
-          ),
-          fetch(
-            `https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/translations/en`
-          ),
+          fetch(`https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/allLanguages/en`),
+          fetch(`https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/translations/en`)
         ]);
-
-        //Set states
+  
+        // Set states
         const languagesData = await languagesResponse.json();
         const translationsData = await translationsResponse.json();
-
+  
         setLanguages(languagesData);
-
-        // Set translation prompts, some languages don't have this, default is "SortLanguagesPrompt"
-        setPrompts(translationsData);
+        
+        // Update prompt with current selected language
+        const topLanguage = dropdowns[0].selectedLanguage;
+        const updatedPrompts = { ...translationsData };
+        if (languagesData[topLanguage] && translationsData.SortLanguagesPrompt) {
+          // Fetch the prompt for the top language
+          const topLanguagePromptResponse = await fetch(`https://funwithapis-4kbqnvs2ha-uc.a.run.app/v1/translations/${topLanguage}`);
+          const topLanguagePromptData = await topLanguagePromptResponse.json();
+          updatedPrompts.SortLanguagesPrompt = topLanguagePromptData.SortLanguagesPrompt || translationsData.SortLanguagesPrompt;
+        }
+        setPrompts(updatedPrompts);
+  
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-
+  
     fetchData();
-  }, []);
-
+  }, [dropdowns]); // Add dropdowns as a dependency
   // Handle change in language selection for a card items (dropdowns)
   const handleChange = (event, dropdownId) => {
     const updatedDropdowns = dropdowns.map((dropdown) => {
@@ -108,27 +112,30 @@ const LanguageSelector = () => {
         (dropdown) => dropdown.id !== dropdownId
       );
       setDropdowns(updatedDropdowns);
-    
   };
 
   // Move a card item (dropdown) up in the list
   const handleMoveUp = (index) => {
     if (index === 0) return; // Already at the top, disable button
-    const updatedDropdowns = [...dropdowns];
-    const temp = updatedDropdowns[index];
-    updatedDropdowns[index] = updatedDropdowns[index - 1];
-    updatedDropdowns[index - 1] = temp;
-    setDropdowns(updatedDropdowns);
+    setDropdowns((prevDropdowns) => {
+      const updatedDropdowns = [...prevDropdowns];
+      const temp = updatedDropdowns[index];
+      updatedDropdowns[index] = updatedDropdowns[index - 1];
+      updatedDropdowns[index - 1] = temp;
+      return updatedDropdowns;
+    });
   };
 
   // Move a card item (dropdown) down in the list
   const handleMoveDown = (index) => {
     if (index === dropdowns.length - 1) return; // Already at the bottom, disable button
-    const updatedDropdowns = [...dropdowns];
-    const temp = updatedDropdowns[index];
-    updatedDropdowns[index] = updatedDropdowns[index + 1];
-    updatedDropdowns[index + 1] = temp;
-    setDropdowns(updatedDropdowns);
+    setDropdowns((prevDropdowns) => {
+      const updatedDropdowns = [...prevDropdowns];
+      const temp = updatedDropdowns[index];
+      updatedDropdowns[index] = updatedDropdowns[index + 1];
+      updatedDropdowns[index + 1] = temp;
+      return updatedDropdowns;
+    });
   };
 
   // Extract unique selected languages to manage card item (dropdown) state
@@ -139,7 +146,7 @@ const LanguageSelector = () => {
   return (
     <div className="container">
       {/* Display prompts with selected language translations*/}
-      <h4>{prompts.SortLanguagesPrompt}</h4>
+      <h4>{prompts.SortLanguagesPrompt || "Loading prompt..."}</h4>
 
       {/* Map all cards to render each Card*/}
       {dropdowns.map((dropdown, index) => (
@@ -209,7 +216,7 @@ const LanguageSelector = () => {
       {/* Button to add a new dropdown*/}
       <div style={{ marginTop: "10px" }}>
         <Button variant="contained" color="primary" onClick={handleAddDropdown}>
-          {prompts.ChoosePreferredLanguagesPrompt}
+          {prompts.ChoosePreferredLanguagesPrompt || "Add Dropdown"}
         </Button>
       </div>
 
