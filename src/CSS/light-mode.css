@@ -1,0 +1,224 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* Importing Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* Default Light Mode Variables */
+:root {
+  --background-color: #ffffff;
+  --text-color: #000000;
+  --primary-color: #6200ea;
+  --card-background: #f8f9fa;
+  --button-background: rgba(58, 69, 180);
+  --button-text-color: #ffffff; /* White text for light mode */
+  --button-hover-background: #5a3a7e;
+  --border-color: #ddd;
+  --select-focus-border-color: #764ba2;
+  --select-focus-box-shadow: rgba(118, 75, 162, 0.2);
+}
+
+/* Dark Mode Variables */
+[data-theme='dark'] {
+  --background-color: #121212;
+  --text-color: #e0e0e0;
+  --primary-color: #bb86fc;
+  --card-background: #1e1e1e;
+  --button-background: rgba(58, 69, 180, 0.8);
+  --button-hover-background: #3a3a7e;
+  --border-color: #333;
+  --select-focus-border-color: #bb86fc;
+  --select-focus-box-shadow: rgba(187, 134, 252, 0.2);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--background-color) 0%, rgba(58, 69, 180) 100%);
+  color: var(--text-color);
+}
+
+/* AppBar styles */
+.MuiAppBar-root {
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Card styles */
+.MuiCard-root {
+  background-color: var(--card-background) !important;
+}
+
+.MuiCardContent-root {
+  color: var(--text-color) !important;
+}
+
+/* Button styles */
+.MuiButton-root {
+  background-color: var(--button-background) !important;
+  color: var(--background-color) !important;
+  color: var(--button-text-color);
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  font-weight: 600 !important;
+  box-shadow: 0 5px 15px rgba(58, 69, 180, 0.4) !important;
+  transform: scale(1) !important;
+}
+
+.MuiButton-root:hover {
+  background-color: var(--button-hover-background) !important;
+  transform: scale(1.05) !important;
+}
+
+.MuiButton-root:disabled {
+  background-color: #ccc !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Select styles */
+.MuiSelect-root {
+  color: var(--text-color) !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  background-color: var(--background-color) !important;
+}
+
+/* Select Dropdown Styles */
+.MuiSelect-select {
+  color: var(--text-color) !important;
+}
+
+/* Select Focus Styles */
+.MuiSelect-root:focus {
+  border-color: var(--select-focus-border-color) !important;
+  box-shadow: 0 0 0 2px var(--select-focus-box-shadow) !important;
+}
+
+/* Dialog styles */
+.MuiDialog-paper {
+  background-color: var(--background-color) !important;
+}
+
+/* TextField styles */
+.MuiTextField-root {
+  color: var(--text-color) !important;
+  margin-bottom: 20px !important;
+}
+
+/* Card actions */
+.MuiCardActions-root {
+  display: flex !important;
+  justify-content: space-between !important;
+  margin-top: 10px !important;
+}
+
+/* Paragraph Text */
+p {
+  font-size: 1.1rem;
+  margin: 15px 0;
+  line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .MuiButton-root {
+    font-size: 0.9rem !important;
+  }
+
+  .MuiSelect-root {
+    font-size: 0.9rem !important;
+  }
+}
+
+
+.card {
+  background-color: var(--card-background);
+}
+
+button {
+  background-color: var(--button-background);
+}
+
+button:hover {
+  background-color: var(--button-hover-background);
+}
+
+select:focus {
+  border-color: var(--select-focus-border-color);
+  box-shadow: 0 0 0 2px var(--select-focus-box-shadow);
+}
+
+
+p {
+  font-size: 1.1rem;
+  margin: 15px 0;
+  line-height: 1.5;
+}
+
+.card {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+button {
+  margin-top: 20px;
+  padding: 12px 24px;
+  background-color: var(--button-background);
+  color: var(--background-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 5px 15px #ffffff66;
+  transform: scale(1);
+  border: 2px #ffffff66;
+}
+
+button:hover {
+  background-color: #5a3a7e;
+  transform: scale(1.05);
+  color: black;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 20px;
+  }
+
+  select, button {
+    font-size: 0.9rem;
+  }
+}
